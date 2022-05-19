@@ -117,7 +117,8 @@ QMenu::separator
 QMenu::item
 {
     min-width : 150px;
-    padding: 3px 20px 3px 20px;
+	min-height : 30px;
+    padding: 5px 25px 5px 5px;
 
 }
 
