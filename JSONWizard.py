@@ -1,10 +1,11 @@
 # Import Statements
+from fileinput import filename
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream
-from PySide2.QtWidgets import QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QVBoxLayout
+from PySide2.QtWidgets import QStyle, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
+import sys
+from pathvalidate import ValidationError, validate_filename
 
-# Currently Open File
-openFile = None
 # QApplication Instance
 app = QApplication([])
 
@@ -17,24 +18,117 @@ app.setStyleSheet(styleSheet.readAll())
 class FileCreationWindow(QWidget):
     def __init__(self):
         super().__init__()
+        # Local Variables
+        minTextFieldHeight = 25
+        buttonWidth = 150
+        buttonHeight = 30
         # Set Window Settings for Pop Up Menu
         self.setWindowTitle("Create New JSON File")
         self.setMinimumSize(490, 320)
         self.setWindowModality(Qt.ApplicationModal)
+        appIcon = QIcon("./icons/appIcon.png")
+        self.setWindowIcon(appIcon)
 
+        # Create UI Elements and add them to the Form Layout
+        layout = QFormLayout()
+        layout.setMargin(80)
+        layout.setVerticalSpacing(50)
+
+        # Create and Configure File Name Field
+        hbox = QHBoxLayout()
+
+        self.fileNameField = QLineEdit()
+        self.fileNameField.setMaxLength(250)
+        self.fileNameField.setMinimumHeight(minTextFieldHeight)
+        self.fileNameField.setPlaceholderText("Enter file name <= 255 characters ")
+        hbox.addWidget(self.fileNameField)
+
+        self.fileExtensionLabel = QLabel(" .json")
+        self.fileExtensionLabel.setScaledContents(True)
+        hbox.addWidget(self.fileExtensionLabel)
+        # Add to Layout
+        layout.addRow("Save As: ", hbox)
+
+        # Create and Configure File Path Field and Selection Button
+        hbox2 = QHBoxLayout()
+
+        self.filePathField = QLineEdit()
+        self.filePathField.setPlaceholderText("Select a valid file path")
+        self.filePathField.setReadOnly(True)
+        self.filePathField.setMinimumHeight(minTextFieldHeight)
+        hbox2.addWidget(self.filePathField)
+
+        self.filePathSelectionButton = QPushButton("Select Path")
+        self.filePathSelectionButton.clicked.connect(self.openPathSelectionScreen)
+        hbox2.addWidget(self.filePathSelectionButton)
+        # Add to the Layout
+        layout.addRow("Select new file path: ", hbox2)
+
+        # Create and Configure Confirm and Cancel Buttons
+        hbox3 = QHBoxLayout()
+        hbox3.setAlignment(Qt.AlignCenter)
+
+        # Custom Cancel Button Style Sheet Setup
+        styleSheetFile = QFile("./qss/cancelButton.qss")
+        styleSheetFile.open(QFile.ReadOnly | QFile.Text)
+        styleSheet = QTextStream(styleSheetFile)
+        # Cancel Button Setup
+        self.cancelButton = QPushButton("Cancel")
+        self.cancelButton.setStyleSheet(styleSheet.readAll())
+        self.cancelButton.setFixedWidth(buttonWidth)
+        self.cancelButton.setFixedHeight(buttonHeight)
+        self.cancelButton.clicked.connect(self.close)
+        hbox3.addWidget(self.cancelButton)
+
+        hbox3.addSpacing(25)
+        # Confirm button Setup
+        self.confirmButton = QPushButton("Create File")
+        self.confirmButton.setFixedWidth(buttonWidth)
+        self.confirmButton.setFixedHeight(buttonHeight)
+        self.confirmButton.clicked.connect(self.validateInput)
+        hbox3.addWidget(self.confirmButton)
+        # Add to layout
+        layout.addRow(hbox3)
         # Set Layout of the Window
-        layout = QVBoxLayout()
         self.setLayout(layout)
     
+    # Function to validate entered file name and selected path
+    def validateInput(self):
+        fileName = self.fileNameField.text()
+        if not fileName:
+            # Error Handling!
+            pass
+        path = self.filePathField.text()
+        if not path:
+            # Error Handling!
+            pass
+            
     # Function to Create New JSON Files
-    def createNewJsonFile(self, fileName, filePath):
+    def createNewJsonFile(self, filePath):
+        # Create New JSON File
+
         pass
+
+    # Function to open screen where user can select the directory for their new file
+    def openPathSelectionScreen(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        if dialog.exec_():
+            directoryName = dialog.selectedFiles()[0]
+            self.filePathField.setText(directoryName)
+    
+            
+
 
 # Main Program Window
 class JSONWizard(QMainWindow):
     
     def __init__(self):
         super().__init__()
+        # Currently Open File
+        self.openFile = None
+        self.openFilePath = None
+        self.fileCurrentlyOpen = False
         # Set up popup create file window
         self.createFileWindow = None
 
@@ -70,6 +164,8 @@ class JSONWizard(QMainWindow):
 
         # Menu Item for Saving the current file as a new file (with hotkey Shift-Ctrl-S)
 
+        # Menu Item for Converting from JSON to another file type?
+
         # Add all menu items
         file_menu.addAction(createFileAction)
         file_menu.addAction(openFileAction)
@@ -87,8 +183,8 @@ class JSONWizard(QMainWindow):
     
     def openFileExplorer(self):
         fileTuple = QFileDialog.getOpenFileName(self, "Open JSON File", "./", "JSON Files (*.json)")
-        self.openFile = fileTuple[0]
-        self.fileOpen = True
+        self.openFilePath = fileTuple[0]
+        self.fileCurrentlyOpen = True
 
     def saveCurrentFile(self):
         pass
