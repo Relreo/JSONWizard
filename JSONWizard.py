@@ -1,5 +1,4 @@
 # Import Statements
-import sys, json
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream
 from PySide2.QtWidgets import QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QVBoxLayout
@@ -26,6 +25,10 @@ class FileCreationWindow(QWidget):
         # Set Layout of the Window
         layout = QVBoxLayout()
         self.setLayout(layout)
+    
+    # Function to Create New JSON Files
+    def createNewJsonFile(self, fileName, filePath):
+        pass
 
 # Main Program Window
 class JSONWizard(QMainWindow):
