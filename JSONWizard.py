@@ -1,10 +1,10 @@
 # Import Statements
-from fileinput import filename
 from PySide2.QtGui import QIcon, QCloseEvent
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream
-from PySide2.QtWidgets import QStyle, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
-import sys
+from PySide2.QtWidgets import QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
 from pathvalidate import ValidationError, validate_filename
+
+from JSONTreeView import JSONTreeView
 
 # QApplication Instance
 app = QApplication([])
@@ -20,9 +20,11 @@ class JSONWizard(QMainWindow):
     def __init__(self):
         super().__init__()
         # Currently Open File
-        self.openFile = None
-        self.openFilePath = None
+        # TODO Set up Visual Editor (JSONTreeView)
+        self.treeView = JSONTreeView()
+        self.openFile = QFile()
         self.fileCurrentlyOpen = False
+        self.unsavedChanges = False
         # Set up popup create file window
         self.createFileWindow = None
 
@@ -41,8 +43,7 @@ class JSONWizard(QMainWindow):
         toolBar.setMinimumHeight(25)
         
         
-        self.addToolBar(toolBar)
-        # TODO Set up Visual Editor
+        self.addToolBar(toolBar)       
     
     def setUpMenuBar(self):
         menu = self.menuBar()
@@ -75,13 +76,15 @@ class JSONWizard(QMainWindow):
     def openFileExplorer(self):
         fileTuple = QFileDialog.getOpenFileName(self, "Open JSON File", "./", "JSON Files (*.json)")
         fileNameAndPath = fileTuple[0]
-        self.fileCurrentlyOpen = True
-        try:
-            self.openFile = open(fileNameAndPath)
-        except:
-            print("WEIRD OS ERROR OCCURED MADAY MADAY *HORNS SOUNDING*")
-        else:
-            self.openFilePath = fileNameAndPath
+        if self.openFile.isOpen():
+            # TODO IF UNSAVED CHANGES, ASK TO CONFIRM
+            self.openFile.close()
+        fileNameAndPath.replace('\\','/')
+        self.openFile.setFileName(fileNameAndPath)
+        self.changeFile()
+    # TODO Function for Handling the Changing of Files
+    def changeFile(self):
+        pass
 
     def saveCurrentFile(self):
         pass
@@ -200,17 +203,12 @@ class FileCreationWindow(QWidget):
             else:
                 self.errorLabel.hide()
                 self.createNewJsonFile(fileName, path)
-
-
-
-            
+ 
     # Function to Create New JSON Files
     def createNewJsonFile(self, fileName, filePath):
-        # Create New JSON File
         fileNameAndPath = filePath + "/" + fileName
-        temp = None
         try:
-            temp = open(fileNameAndPath, 'x')
+            open(fileNameAndPath, 'x')
         except FileExistsError:
             self.errorLabel.setText("*Error: File already exists!*")
             self.errorLabel.show()
@@ -218,9 +216,12 @@ class FileCreationWindow(QWidget):
             self.errorLabel.setText("*WEIRD OS ERROR, SHOULD BE UNREACHABLE*")
             self.errorLabel.show()
         else:
-            mainPage.openFile = temp
-            mainPage.openFilePath = fileNameAndPath
-            mainPage.fileCurrentlyOpen = True
+            if mainPage.openFile.isOpen():
+                # TODO IF UNSAVED CHANGES, ASK TO CONFIRM
+                mainPage.openFile.close()
+            fileNameAndPath.replace('\\','/')
+            mainPage.openFile.setFileName(fileNameAndPath)
+            mainPage.changeFile()
             self.close()
             
     # Function to open screen where user can select the directory for their new file
