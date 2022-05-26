@@ -1,10 +1,11 @@
 # Import Statements
 from PySide2.QtGui import QIcon, QCloseEvent
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream
-from PySide2.QtWidgets import QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
+from PySide2.QtWidgets import QTreeView, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
 from pathvalidate import ValidationError, validate_filename
-
-from JSONTreeView import JSONTreeView
+import QJSONModel
+import json
+import os
 
 # QApplication Instance
 app = QApplication([])
@@ -21,8 +22,11 @@ class JSONWizard(QMainWindow):
         super().__init__()
         # Currently Open File
         # TODO Set up Visual Editor (JSONTreeView)
-        self.treeView = JSONTreeView()
-        self.openFile = QFile()
+        self.treeView = QTreeView()
+        self.model = QJSONModel.QJsonModel()
+        self.treeView.setModel(self.model)
+        self.setCentralWidget(self.treeView)
+        self.openFile = ""
         self.fileCurrentlyOpen = False
         self.unsavedChanges = False
         # Set up popup create file window
@@ -76,15 +80,18 @@ class JSONWizard(QMainWindow):
     def openFileExplorer(self):
         fileTuple = QFileDialog.getOpenFileName(self, "Open JSON File", "./", "JSON Files (*.json)")
         fileNameAndPath = fileTuple[0]
-        if self.openFile.isOpen():
-            # TODO IF UNSAVED CHANGES, ASK TO CONFIRM
-            self.openFile.close()
         fileNameAndPath.replace('\\','/')
-        self.openFile.setFileName(fileNameAndPath)
-        self.changeFile()
+        self.openFile = fileNameAndPath
+        self.openNewFile()
     # TODO Function for Handling the Changing of Files
-    def changeFile(self):
-        pass
+    def openNewFile(self):
+        with open(self.openFile, "r+") as file:
+            if os.stat(self.openFile).st_size != 0:
+                document = json.load(file)
+            else:
+                document = {}
+                json.dump(document, file)
+            self.model.load(document)
 
     def saveCurrentFile(self):
         pass
@@ -216,12 +223,9 @@ class FileCreationWindow(QWidget):
             self.errorLabel.setText("*WEIRD OS ERROR, SHOULD BE UNREACHABLE*")
             self.errorLabel.show()
         else:
-            if mainPage.openFile.isOpen():
-                # TODO IF UNSAVED CHANGES, ASK TO CONFIRM
-                mainPage.openFile.close()
             fileNameAndPath.replace('\\','/')
-            mainPage.openFile.setFileName(fileNameAndPath)
-            mainPage.changeFile()
+            mainPage.openFile = fileNameAndPath
+            mainPage.openNewFile()
             self.close()
             
     # Function to open screen where user can select the directory for their new file

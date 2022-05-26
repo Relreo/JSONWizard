@@ -30,6 +30,35 @@ QWidget
 
 }
 
+QTreeView
+{
+	background-color: white;
+}
+QTreeView::item
+{
+	color: black;
+}
+QTreeView::item::hover
+{
+	background-color: #3285a8;
+}
+QTreeView::item::selected
+{
+	border: 2px solid blue;
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings
+{
+    border-image: none;
+    image: url(icons/branch-open.png);
+}
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings 
+{
+    border-image: none;
+    image: url(icons/branch-closed.png);
+}
 
 /*-----QLabel-----*/
 QLabel
@@ -283,10 +312,10 @@ QComboBox QAbstractItemView
 {
     background-color: #383838;
     color: #ffffff;
-    border: 1px solid black;
+    border: 2px solid black;
     selection-background-color: #4969ff;
     selection-color: #ffffff;
-    outline: 0;
+    outline: 2;
 
 }
 
