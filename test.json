@@ -1,28 +1,29 @@
 [
     {
-        "test": "fart"
+        "WOOOOOOOO": "WOOOOOOOOOOO"
     },
     {
-        "test": "fart 2"
+        "I cant believe this works": true
     },
     {
-        "firstName": "John",
-        "lastName": "Smith",
-        "age": 25,
         "address": {
-            "streetAddress": "21 2nd Street",
             "city": "New York",
+            "postalCode": "10021",
             "state": "NY",
-            "postalCode": "10021"
+            "streetAddress": "21 2nd Street"
         },
+        "age": 6,
+        "firstName": false,
+        "lastName": true,
+        "paidTaxes": false,
         "phoneNumber": [
             {
-                "type": "home",
-                "number": "212 555-1234"
+                "number": "212 555-1234",
+                "type": "home"
             },
             {
-                "type": "fax",
-                "number": "646 555-4567"
+                "number": "646 555-4567",
+                "type": "fax"
             }
         ]
     }

@@ -1,5 +1,6 @@
 # Import Statements
-from PySide2.QtGui import QIcon, QCloseEvent
+from msilib.schema import File
+from PySide2.QtGui import QIcon, QCloseEvent, QKeySequence
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream
 from PySide2.QtWidgets import QTreeView, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
 from pathvalidate import ValidationError, validate_filename
@@ -20,12 +21,13 @@ class JSONWizard(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        # Currently Open File
-        # TODO Set up Visual Editor (JSONTreeView)
+        
+        # Visual Editor (JSONTreeView)
         self.treeView = QTreeView()
         self.model = QJSONModel.QJsonModel()
         self.treeView.setModel(self.model)
         self.setCentralWidget(self.treeView)
+        # Currently Open File
         self.openFile = ""
         self.fileCurrentlyOpen = False
         self.unsavedChanges = False
@@ -46,9 +48,15 @@ class JSONWizard(QMainWindow):
         toolBar.setMovable(False)
         toolBar.setMinimumHeight(25)
         
+        self.setUpToolBar()
         
         self.addToolBar(toolBar)       
     
+    # TODO Set Up Toolbar for editing JSON
+    def setUpToolBar(self):
+        
+        pass
+
     def setUpMenuBar(self):
         menu = self.menuBar()
         # Set Up File Menu
@@ -59,8 +67,11 @@ class JSONWizard(QMainWindow):
         # Menu Item for opening existing JSON files
         openFileAction = QAction(QIcon("./icons/JSONFile.png"), "Open existing JSON file...", self)
         openFileAction.triggered.connect(self.openFileExplorer)
-        # TODO Menu Item for Saving the Current File (with hotkey Ctrl-S)
-
+        # Menu Item for Saving the Current File (with hotkey Ctrl-S)
+        saveFileAction = QAction(QIcon("./icons/SaveFile.png"), "Save current file...", self)
+        saveFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
+        saveFileAction.setShortcutVisibleInContextMenu(True)
+        saveFileAction.triggered.connect(self.saveCurrentFile)
         # TODO Menu Item for Saving the current file as a new file (with hotkey Shift-Ctrl-S)
 
         # TODO Menu Item for Converting from JSON to another file type?
@@ -68,6 +79,7 @@ class JSONWizard(QMainWindow):
         # Add all menu items
         file_menu.addAction(createFileAction)
         file_menu.addAction(openFileAction)
+        file_menu.addAction(saveFileAction)
 
         # TODO Set Up Help Menu
         help_menu = menu.addMenu("Help")
@@ -83,7 +95,7 @@ class JSONWizard(QMainWindow):
         fileNameAndPath.replace('\\','/')
         self.openFile = fileNameAndPath
         self.openNewFile()
-    # TODO Function for Handling the Changing of Files
+
     def openNewFile(self):
         with open(self.openFile, "r+") as file:
             if os.stat(self.openFile).st_size != 0:
@@ -94,6 +106,9 @@ class JSONWizard(QMainWindow):
             self.model.load(document)
 
     def saveCurrentFile(self):
+        saveStateDict = self.model.json()
+        with open(self.openFile, "w") as file:
+            json.dump(saveStateDict, file, indent=4)
         pass
 
     def saveAsCurrentFile(self):

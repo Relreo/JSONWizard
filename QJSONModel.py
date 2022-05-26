@@ -1,5 +1,7 @@
 """Python adaptation of https://github.com/dridk/QJsonModel
 
+Tweaked for JSONWizard project by Ian Maynard
+
 Supports Python 2 and 3 with PySide, PySide2, PyQt4 or PyQt5.
 Requires https://github.com/mottosso/Qt.py
 
@@ -23,6 +25,7 @@ Changes:
               ...    model.load(document)
 
 """
+from xmlrpc.client import boolean
 from PySide2 import QtCore
 
 class QJsonTreeItem(object):
@@ -77,7 +80,7 @@ class QJsonTreeItem(object):
         self._type = typ
 
     @classmethod
-    def load(self, value, parent=None, sort=True):
+    def load(self, value, parent=None, sort=False):
         rootItem = QJsonTreeItem(parent)
         rootItem.key = "root"
 
@@ -171,14 +174,29 @@ class QJsonModel(QtCore.QAbstractItemModel):
                 return item.value
 
     def setData(self, index, value, role):
+        valueString = str(value)
+        if valueString == "":
+            return False
+
         if role == QtCore.Qt.EditRole:
+            item = index.internalPointer()
             if index.column() == 1:
-                item = index.internalPointer()
-                item.value = str(value)
+                if valueString.isdigit():
+                    item.value = int(valueString)
+                elif valueString == "null":
+                    item.value = None
+                elif (valueString == "true") | (valueString == "True"):
+                    item.value = True
+                elif (valueString == "false") | (valueString == "False"):
+                    item.value = False
+                else:
+                    item.value = valueString
+            else:
+                item.key = valueString
 
-                self.dataChanged.emit(index, index)
+            self.dataChanged.emit(index, index, [QtCore.Qt.EditRole])
 
-                return True
+            return True
 
         return False
 
@@ -233,10 +251,7 @@ class QJsonModel(QtCore.QAbstractItemModel):
     def flags(self, index):
         flags = super(QJsonModel, self).flags(index)
 
-        if index.column() == 1:
-            return QtCore.Qt.ItemIsEditable | flags
-        else:
-            return flags
+        return QtCore.Qt.ItemIsEditable | flags
 
     def genJson(self, item):
         nchild = item.childCount()

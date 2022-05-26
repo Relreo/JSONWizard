@@ -37,6 +37,7 @@ QTreeView
 QTreeView::item
 {
 	color: black;
+	min-height: 25px;
 }
 QTreeView::item::hover
 {
@@ -44,7 +45,7 @@ QTreeView::item::hover
 }
 QTreeView::item::selected
 {
-	border: 2px solid blue;
+	border: 1px solid blue;
 }
 
 QTreeView::branch:open:has-children:!has-siblings,
