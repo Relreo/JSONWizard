@@ -43,19 +43,25 @@ class JSONWizard(QMainWindow):
         # Create Menu Bar
         self.setUpMenuBar()
         # Create Tool Bar
-        toolBar = QToolBar()
-        toolBar.setIconSize(QSize(64,64))
-        toolBar.setMovable(False)
-        toolBar.setMinimumHeight(25)
+        self.toolBar = QToolBar()
+        self.toolBar.setIconSize(QSize(32,32))
+        self.toolBar.setMovable(False)
+        self.toolBar.setMinimumHeight(25)
         
         self.setUpToolBar()
         
-        self.addToolBar(toolBar)       
+        self.addToolBar(self.toolBar)       
     
     # TODO Set Up Toolbar for editing JSON
     def setUpToolBar(self):
-        
-        pass
+        addAction = QAction(QIcon("./icons/add.png"), "Add New Object", self)
+        addAction.triggered.connect(self.addObject)
+
+        removeAction = QAction(QIcon("./icons/remove.png"), "Remove Selected Object", self)
+        removeAction.triggered.connect(self.removeObject)
+
+        self.toolBar.addAction(addAction)
+        self.toolBar.addAction(removeAction)
 
     def setUpMenuBar(self):
         menu = self.menuBar()
@@ -113,6 +119,14 @@ class JSONWizard(QMainWindow):
 
     def saveAsCurrentFile(self):
         pass
+
+    def addObject(self):
+        pass
+
+    def removeObject(self):
+        pass
+
+
 
 mainPage = JSONWizard()
 mainPage.show()

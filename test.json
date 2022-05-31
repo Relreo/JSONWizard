@@ -1,25 +1,25 @@
 [
     {
-        "WOOOOOOOO": "WOOOOOOOOOOO"
+        "lmao": "test"
     },
     {
         "I cant believe this works": true
     },
     {
-        "address": {
+        "ADDRESS": {
             "city": "New York",
             "postalCode": "10021",
             "state": "NY",
             "streetAddress": "21 2nd Street"
         },
-        "age": 6,
-        "firstName": false,
-        "lastName": true,
-        "paidTaxes": false,
-        "phoneNumber": [
+        "age": 72,
+        "firstName": true,
+        "lastName": false,
+        "paidTaxes": true,
+        "PHONENUMBERS": [
             {
-                "number": "212 555-1234",
-                "type": "home"
+                "number": "212-532-4557",
+                "type": "cell"
             },
             {
                 "number": "646 555-4567",

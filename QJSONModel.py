@@ -39,6 +39,8 @@ class QJsonTreeItem(object):
 
     def appendChild(self, item):
         self._children.append(item)
+    def removeChild(self, item):
+        self._children.remove(item)
 
     def child(self, row):
         return self._children[row]
@@ -181,18 +183,25 @@ class QJsonModel(QtCore.QAbstractItemModel):
         if role == QtCore.Qt.EditRole:
             item = index.internalPointer()
             if index.column() == 1:
-                if valueString.isdigit():
-                    item.value = int(valueString)
-                elif valueString == "null":
-                    item.value = None
-                elif (valueString == "true") | (valueString == "True"):
-                    item.value = True
-                elif (valueString == "false") | (valueString == "False"):
-                    item.value = False
-                else:
-                    item.value = valueString
+                if item.type != list and item.type != dict:
+                    if valueString.isdigit():
+                        item.value = int(valueString)
+                        item.type = int
+                    elif valueString == "null":
+                        item.value = None
+                        item.type = None
+                    elif (valueString == "true") | (valueString == "True"):
+                        item.value = True
+                        item.type = bool
+                    elif (valueString == "false") | (valueString == "False"):
+                        item.value = False
+                        item.type = bool
+                    else:
+                        item.value = valueString
+                        item.type = str
             else:
-                item.key = valueString
+                if item.parent().type != list:
+                    item.key = valueString
 
             self.dataChanged.emit(index, index, [QtCore.Qt.EditRole])
 
