@@ -2,7 +2,7 @@
 from msilib.schema import File
 from PySide2.QtGui import QIcon, QCloseEvent, QKeySequence
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream
-from PySide2.QtWidgets import QTreeView, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
+from PySide2.QtWidgets import QTreeView, QMessageBox, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
 from pathvalidate import ValidationError, validate_filename
 import QJSONModel
 import json
@@ -43,7 +43,7 @@ class JSONWizard(QMainWindow):
         # Create Menu Bar
         self.setUpMenuBar()
         # Create Tool Bar
-        self.toolBar = QToolBar()
+        self.toolBar = QToolBar(self)
         self.toolBar.setIconSize(QSize(32,32))
         self.toolBar.setMovable(False)
         self.toolBar.setMinimumHeight(25)
@@ -54,11 +54,11 @@ class JSONWizard(QMainWindow):
     
     # TODO Set Up Toolbar for editing JSON
     def setUpToolBar(self):
-        addAction = QAction(QIcon("./icons/add.png"), "Add New Object", self)
-        addAction.triggered.connect(self.addObject)
+        addAction = QAction(QIcon("./icons/add.png"), "Add New Item", self)
+        addAction.triggered.connect(self.addItem)
 
-        removeAction = QAction(QIcon("./icons/remove.png"), "Remove Selected Object", self)
-        removeAction.triggered.connect(self.removeObject)
+        removeAction = QAction(QIcon("./icons/remove.png"), "Remove Selected Item", self)
+        removeAction.triggered.connect(self.removeSelectedItem)
 
         self.toolBar.addAction(addAction)
         self.toolBar.addAction(removeAction)
@@ -116,15 +116,28 @@ class JSONWizard(QMainWindow):
         with open(self.openFile, "w") as file:
             json.dump(saveStateDict, file, indent=4)
         pass
-
+    
+    # TODO
     def saveAsCurrentFile(self):
+        
         pass
 
-    def addObject(self):
+    def addItem(self):
         pass
 
-    def removeObject(self):
-        pass
+    def removeSelectedItem(self):
+        # Get the currently selected object
+        currentIndex = self.treeView.currentIndex()
+        currentItem = self.treeView.model().data(currentIndex, Qt.EditRole)
+        # If the object has children, do a confirm deletion pop-up
+        if currentItem.childCount() > 0:
+            messageBox = QMessageBox()
+            confirmation = messageBox.question(self, "Delete Confirmation", "Are you sure you want to delete this item and all of its children?", messageBox.Yes | messageBox.No)
+            if confirmation == messageBox.No:
+                return
+        
+        if self.model.removeRow(currentIndex.row(), currentIndex.parent()):
+            print("deletion success?")
 
 
 

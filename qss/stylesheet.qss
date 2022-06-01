@@ -27,7 +27,6 @@ QWidget
 	background-color: #121212;
 	color: #ffffff;
 	border-color: #051a39;
-
 }
 
 QTreeView
@@ -100,7 +99,6 @@ QMenuBar::disabled
 QMenuBar::item
 {
     background-color: transparent;
-
 }
 
 
@@ -230,12 +228,12 @@ QPushButton::pressed
 /*-----QToolButton-----*/
 QToolButton
 {
-	background-color: #607cff;
+	background-color: transparent;
 	color: #ffffff;
 	border-width: 1px;
 	border-radius: 3px;
 	border-color: #051a39;
-	padding: 3px;
+	padding: 5px;
 
 }
 
@@ -256,8 +254,6 @@ QToolButton::hover
 	border-width: 1px;
 	border-radius: 3px;
 	border-color: #051a39;
-	padding: 3px;
-
 }
 
 
@@ -268,8 +264,6 @@ QToolButton::pressed
 	border-width: 1px;
 	border-radius: 3px;
 	border-color: #051a39;
-	padding: 3px;
-
 }
 
 

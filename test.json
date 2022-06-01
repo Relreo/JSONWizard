@@ -1,9 +1,9 @@
 [
     {
-        "lmao": "test"
+        "can edit": true
     },
     {
-        "I cant believe this works": true
+        "editor somewhat works": true
     },
     {
         "ADDRESS": {

@@ -25,7 +25,6 @@ Changes:
               ...    model.load(document)
 
 """
-from xmlrpc.client import boolean
 from PySide2 import QtCore
 
 class QJsonTreeItem(object):
@@ -39,6 +38,7 @@ class QJsonTreeItem(object):
 
     def appendChild(self, item):
         self._children.append(item)
+    
     def removeChild(self, item):
         self._children.remove(item)
 
@@ -121,6 +121,21 @@ class QJsonModel(QtCore.QAbstractItemModel):
     def clear(self):
         self.load({})
 
+    def removeRows(self, row: int, count: int, parent: QtCore.QModelIndex = ...) -> bool:
+        if count <= 0 or row < 0 or (row + count) > self.rowCount(parent):
+            return False
+        
+        self.beginRemoveRows(parent, row, row + count - 1)
+        
+        parentItem = self.data(parent, QtCore.Qt.EditRole)
+        
+        for n in range(row, row + count):
+            parentItem.removeChild(parentItem.child(n))
+
+        self.endRemoveRows()
+
+        return True
+
     def load(self, document):
         """Load from dictionary
 
@@ -172,8 +187,7 @@ class QJsonModel(QtCore.QAbstractItemModel):
                 return item.value
 
         elif role == QtCore.Qt.EditRole:
-            if index.column() == 1:
-                return item.value
+            return item
 
     def setData(self, index, value, role):
         valueString = str(value)
