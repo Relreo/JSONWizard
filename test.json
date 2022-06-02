@@ -1,9 +1,6 @@
 [
     {
-        "can edit": true
-    },
-    {
-        "editor somewhat works": true
+        "cant edit": false
     },
     {
         "ADDRESS": {
@@ -13,9 +10,9 @@
             "streetAddress": "21 2nd Street"
         },
         "age": 72,
-        "firstName": true,
-        "lastName": false,
-        "paidTaxes": true,
+        "firstName": "Ian",
+        "lastName": "Maynard",
+        "paidTaxes": false,
         "PHONENUMBERS": [
             {
                 "number": "212-532-4557",

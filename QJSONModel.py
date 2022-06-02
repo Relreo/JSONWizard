@@ -93,12 +93,14 @@ class QJsonTreeItem(object):
             )
 
             for key, value in items:
+                # rootItem.value = "**JSON Object**"
                 child = self.load(value, rootItem)
                 child.key = key
                 child.type = type(value)
                 rootItem.appendChild(child)
 
         elif isinstance(value, list):
+            # rootItem.value = "**JSON Array**"
             for index, value in enumerate(value):
                 child = self.load(value, rootItem)
                 child.key = index
@@ -128,9 +130,16 @@ class QJsonModel(QtCore.QAbstractItemModel):
         self.beginRemoveRows(parent, row, row + count - 1)
         
         parentItem = self.data(parent, QtCore.Qt.EditRole)
-        
+        if not parentItem:
+            parentItem = self._rootItem
+
         for n in range(row, row + count):
             parentItem.removeChild(parentItem.child(n))
+        if parentItem.type is list:
+            for n in range(row + count - 1, parentItem.childCount()):
+                currentKey = parentItem.child(n).key
+                parentItem.child(n).key = currentKey - count
+
 
         self.endRemoveRows()
 

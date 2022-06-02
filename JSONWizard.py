@@ -136,8 +136,7 @@ class JSONWizard(QMainWindow):
             if confirmation == messageBox.No:
                 return
         
-        if self.model.removeRow(currentIndex.row(), currentIndex.parent()):
-            print("deletion success?")
+        self.model.removeRow(currentIndex.row(), currentIndex.parent())
 
 
 
