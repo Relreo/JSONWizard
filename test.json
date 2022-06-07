@@ -1,13 +1,14 @@
 [
     {
-        "cant edit": false
+        "woah": "far out"
     },
     {
         "ADDRESS": {
             "city": "New York",
             "postalCode": "10021",
             "state": "NY",
-            "streetAddress": "21 2nd Street"
+            "streetAddress": "21 2nd Street",
+            "key": "value"
         },
         "age": 72,
         "firstName": "Ian",
@@ -16,11 +17,13 @@
         "PHONENUMBERS": [
             {
                 "number": "212-532-4557",
-                "type": "cell"
+                "type": "cell",
+                "bofa": "deez"
             },
             {
                 "number": "646 555-4567",
-                "type": "fax"
+                "type": "fax",
+                "ligma": "sugma"
             }
         ]
     }

@@ -12,8 +12,8 @@
         }
     ],
     "spouse": null,
-    "favoriteSports": [
-        "Football",
-        "Cricket"
-    ]
+    "test": {
+        "name": "fart man"
+    },
+    "key": "value"
 }

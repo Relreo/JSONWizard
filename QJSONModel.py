@@ -56,7 +56,7 @@ class QJsonTreeItem(object):
             self._parent._children.index(self)
             if self._parent else 0
         )
-
+    
     @property
     def key(self):
         return self._key
@@ -122,6 +122,50 @@ class QJsonModel(QtCore.QAbstractItemModel):
 
     def clear(self):
         self.load({})
+
+    def insertRow(self, currentIndex: QtCore.QModelIndex, itemType: str | list | dict, parent: QtCore.QModelIndex) -> bool:
+        return self.insertRows(currentIndex, 1, itemType, parent)
+
+    def insertRows(self, currentIndex: QtCore.QModelIndex, count: int, itemType: str | list | dict, parent: QtCore.QModelIndex) -> bool:
+        row = 0
+        if currentIndex:
+            row = currentIndex.row()
+
+        if count <= 0 or row < 0:
+            return False
+
+        parentItem = self.data(parent, QtCore.Qt.EditRole)
+        
+        if not parentItem or not currentIndex:
+            parentItem = self._rootItem
+        else:
+            currentItem = self.data(currentIndex, QtCore.Qt.EditRole)
+            parentItem = self.data(parent, QtCore.Qt.EditRole)
+            if currentItem:
+                if currentItem.type is list or currentItem.type is dict:
+                    parentItem = currentItem
+            
+        
+
+        newItem = QJsonTreeItem(parentItem)
+        newItem.type = itemType
+        if parentItem.type is list:
+            newItem.key = parentItem.childCount()
+        elif parentItem.type is dict:
+            if itemType is list:
+                newItem.key = "**UNNAMED ARRAY**"
+            elif itemType is dict:
+                newItem.key = "**UNNAMED OBJECT**"
+            else:
+                newItem.key = "**KEY**"
+        if itemType is str:
+            newItem.value = "**VALUE**"
+
+        self.beginInsertRows(parent, row, row + count - 1)
+        parentItem.appendChild(newItem)
+        self.endInsertRows()
+
+        return True
 
     def removeRows(self, row: int, count: int, parent: QtCore.QModelIndex = ...) -> bool:
         if count <= 0 or row < 0 or (row + count) > self.rowCount(parent):
