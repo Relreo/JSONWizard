@@ -1,30 +1,28 @@
 [
     {
-        "woah": "far out"
-    },
-    {
         "ADDRESS": {
-            "city": "New York",
-            "postalCode": "10021",
-            "state": "NY",
-            "streetAddress": "21 2nd Street",
-            "key": "value"
+            "city": "Costa Mesa",
+            "postalCode": 92627,
+            "state": "CA",
+            "streetAddress": "1935 Fullerton Ave",
+            "apartment": false
         },
-        "age": 72,
+        "age": 25,
         "firstName": "Ian",
         "lastName": "Maynard",
         "paidTaxes": false,
         "PHONENUMBERS": [
             {
-                "number": "212-532-4557",
+                "number": "949-873-3363",
                 "type": "cell",
-                "bofa": "deez"
+                "callMe": false
             },
             {
-                "number": "646 555-4567",
-                "type": "fax",
-                "ligma": "sugma"
+                "number": "949-885-6084",
+                "type": "work",
+                "callMe": true
             }
         ]
-    }
+    },
+    []
 ]

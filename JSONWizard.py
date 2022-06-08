@@ -59,7 +59,6 @@ class JSONWizard(QMainWindow):
         
         self.addToolBar(self.toolBar)       
     
-    # TODO Set Up Toolbar for editing JSON
     def setUpToolBar(self):
         self.addValueAction = QAction(QIcon("./icons/add.png"), "Add New Value", self)
         self.addValueAction.triggered.connect(self.addItem)
@@ -98,13 +97,17 @@ class JSONWizard(QMainWindow):
         saveFileAction.setShortcutVisibleInContextMenu(True)
         saveFileAction.triggered.connect(self.saveCurrentFile)
         # TODO Menu Item for Saving the current file as a new file (with hotkey Shift-Ctrl-S)
-
+        saveAsFileAction = QAction(QIcon("./icons/SaveFile.png"), "Save current file as...", self)
+        saveAsFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_S))
+        saveAsFileAction.setShortcutVisibleInContextMenu(True)
+        saveAsFileAction.triggered.connect(self.saveAsCurrentFile)
         # TODO Menu Item for Converting from JSON to another file type?
 
         # Add all menu items
         file_menu.addAction(createFileAction)
         file_menu.addAction(openFileAction)
         file_menu.addAction(saveFileAction)
+        file_menu.addAction(saveAsFileAction)
 
         # TODO Set Up Help Menu
         help_menu = menu.addMenu("Help")
@@ -144,11 +147,15 @@ class JSONWizard(QMainWindow):
         saveStateDict = self.model.json()
         with open(self.openFile, "w") as file:
             json.dump(saveStateDict, file, indent=4)
-        pass
-    # TODO
+
     def saveAsCurrentFile(self):
-        
-        pass
+        saveStateDict = self.model.json()
+        fileTuple = QFileDialog.getSaveFileName(self, "Save JSON File", "./", "JSON Files (*.json)")
+        fileNameAndPath = fileTuple[0]
+        fileNameAndPath.replace('\\','/')
+        self.openFile = fileNameAndPath
+        with open(self.openFile, "w") as file:
+            json.dump(saveStateDict, file, indent=4)
     
     def addItem(self):
         # Get the currently selected object

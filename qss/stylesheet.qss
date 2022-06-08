@@ -31,11 +31,12 @@ QWidget
 
 QTreeView
 {
-	background-color: white;
+	background-color: #ff2d2d30;
 }
 QTreeView::item
 {
-	color: black;
+	color: white;
+	border: 1px solid black;
 	min-height: 25px;
 }
 QTreeView::item::hover

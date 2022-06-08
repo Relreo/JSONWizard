@@ -136,8 +136,13 @@ class QJsonModel(QtCore.QAbstractItemModel):
 
         parentItem = self.data(parent, QtCore.Qt.EditRole)
         
-        if not parentItem or not currentIndex:
+        if not currentIndex:
             parentItem = self._rootItem
+        elif not parentItem:
+            currentItem = self.data(currentIndex, QtCore.Qt.EditRole)
+            if currentItem:
+                if currentItem.type is list or currentItem.type is dict:
+                    parentItem = currentItem
         else:
             currentItem = self.data(currentIndex, QtCore.Qt.EditRole)
             parentItem = self.data(parent, QtCore.Qt.EditRole)
