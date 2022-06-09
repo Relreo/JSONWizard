@@ -1,8 +1,9 @@
 # Import Statements
 from msilib.schema import File
+from tkinter import RIGHT
 from PySide2.QtGui import QIcon, QCloseEvent, QKeySequence
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream, QModelIndex
-from PySide2.QtWidgets import QShortcut, QMessageBox, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
+from PySide2.QtWidgets import QCheckBox, QShortcut, QMessageBox, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
 from pathvalidate import ValidationError, validate_filename
 import QJSONModel
 import json
@@ -11,6 +12,7 @@ from JSONView import JSONView
 
 # QApplication Instance
 app = QApplication([])
+app.setApplicationDisplayName("JSON Wizard")
 
 # Set up general Style Sheet
 styleSheetFile = QFile("./qss/stylesheet.qss")
@@ -18,15 +20,19 @@ styleSheetFile.open(QFile.ReadOnly | QFile.Text)
 styleSheet = QTextStream(styleSheetFile)
 app.setStyleSheet(styleSheet.readAll())
 
+# TODO
+# FIGURE OUT HOW TO USE self.setWindowModified(bool) to keep track of unsaved changes to model. Having trouble with data changed emit stuff
+
+
 class JSONWizard(QMainWindow):
     fileCurrentlyOpen = False
-
     def __init__(self):
         super().__init__()
         
         # Visual Editor (JSONTreeView)
         self.treeView = JSONView(self)
         self.model = QJSONModel.QJsonModel()
+
         self.treeView.setModel(self.model)
         self.treeView.setColumnWidth(0, 350)
         # Clear Selection Hotkey
@@ -36,13 +42,13 @@ class JSONWizard(QMainWindow):
         # Add Tree View to the Window
         self.setCentralWidget(self.treeView)
         # Currently Open File
-        self.openFile = ""
-        self.unsavedChanges = False
+        self.openFile = "NO FILE OPEN"
+        
+        self.fileRootIsObject = True
         # Set up popup create file window
         self.createFileWindow = None
 
         # Window Title and Size
-        self.setWindowTitle("JSONWizard")
         self.setMinimumSize(980, 640)
         appIcon = QIcon("./icons/appIcon.png")
         self.setWindowIcon(appIcon)
@@ -57,60 +63,65 @@ class JSONWizard(QMainWindow):
         
         self.setUpToolBar()
         
-        self.addToolBar(self.toolBar)       
+        self.addToolBar(self.toolBar)
+
     
     def setUpToolBar(self):
-        self.addValueAction = QAction(QIcon("./icons/add.png"), "Add New Value", self)
-        self.addValueAction.triggered.connect(self.addItem)
-        self.addValueAction.setDisabled(True)
+        addValueAction = QAction(QIcon("./icons/add.png"), "Add New Value", self)
+        addValueAction.triggered.connect(self.addItem)
+        addValueAction.setDisabled(True)
         
-        self.addArrayAction = QAction(QIcon("./icons/addArray.png"), "Add New Array", self)
-        self.addArrayAction.triggered.connect(self.addArray)
-        self.addArrayAction.setDisabled(True)
+        addArrayAction = QAction(QIcon("./icons/addArray.png"), "Add New Array", self)
+        addArrayAction.triggered.connect(self.addArray)
+        addArrayAction.setDisabled(True)
 
-        self.addObjectAction = QAction(QIcon("./icons/addObject.png"), "Add New Object", self)
-        self.addObjectAction.triggered.connect(self.addObject)
-        self.addObjectAction.setDisabled(True)
+        addObjectAction = QAction(QIcon("./icons/addObject.png"), "Add New Object", self)
+        addObjectAction.triggered.connect(self.addObject)
+        addObjectAction.setDisabled(True)
 
-        self.removeAction = QAction(QIcon("./icons/remove.png"), "Remove Selected Item", self)
-        self.removeAction.triggered.connect(self.removeSelectedItem)
-        self.removeAction.setDisabled(True)
+        removeAction = QAction(QIcon("./icons/remove.png"), "Remove Selected Item", self)
+        removeAction.setShortcut(QKeySequence(Qt.Key_Delete))
+        removeAction.triggered.connect(self.removeSelectedItem)
+        removeAction.setDisabled(True)
 
-        self.toolBar.addAction(self.addValueAction)
-        self.toolBar.addAction(self.addArrayAction)
-        self.toolBar.addAction(self.addObjectAction)
-        self.toolBar.addAction(self.removeAction)
+        self.toolBar.addAction(addValueAction)
+        self.toolBar.addAction(addArrayAction)
+        self.toolBar.addAction(addObjectAction)
+        self.toolBar.addAction(removeAction)
 
     def setUpMenuBar(self):
         menu = self.menuBar()
         # Set Up File Menu
         file_menu = menu.addMenu("File")
+        file_menu.setToolTipsVisible(False)
         # Menu Item for creating new JSON files
         createFileAction = QAction(QIcon("./icons/JSONFile.png"), "Create new JSON file...", self)
+        createFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_N))
+        createFileAction.setShortcutVisibleInContextMenu(True)
         createFileAction.triggered.connect(self.openCreateFileMenu)
         # Menu Item for opening existing JSON files
         openFileAction = QAction(QIcon("./icons/JSONFile.png"), "Open existing JSON file...", self)
+        openFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_O))
+        openFileAction.setShortcutVisibleInContextMenu(True)
         openFileAction.triggered.connect(self.openFileExplorer)
         # Menu Item for Saving the Current File (with hotkey Ctrl-S)
-        saveFileAction = QAction(QIcon("./icons/SaveFile.png"), "Save current file...", self)
-        saveFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
-        saveFileAction.setShortcutVisibleInContextMenu(True)
-        saveFileAction.triggered.connect(self.saveCurrentFile)
-        # TODO Menu Item for Saving the current file as a new file (with hotkey Shift-Ctrl-S)
-        saveAsFileAction = QAction(QIcon("./icons/SaveFile.png"), "Save current file as...", self)
-        saveAsFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_S))
-        saveAsFileAction.setShortcutVisibleInContextMenu(True)
-        saveAsFileAction.triggered.connect(self.saveAsCurrentFile)
-        # TODO Menu Item for Converting from JSON to another file type?
+        self.saveFileAction = QAction(QIcon("./icons/SaveFile.png"), "Save current file...", self)
+        self.saveFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
+        self.saveFileAction.setShortcutVisibleInContextMenu(True)
+        self.saveFileAction.triggered.connect(self.saveCurrentFile)
+        self.saveFileAction.setDisabled(True)
+        # Menu Item for Saving the current file as a new file (with hotkey Shift-Ctrl-S)
+        self.saveAsFileAction = QAction(QIcon("./icons/SaveFile.png"), "Save current file as...", self)
+        self.saveAsFileAction.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_S))
+        self.saveAsFileAction.setShortcutVisibleInContextMenu(True)
+        self.saveAsFileAction.triggered.connect(self.saveAsCurrentFile)
+        self.saveAsFileAction.setDisabled(True)
 
         # Add all menu items
         file_menu.addAction(createFileAction)
         file_menu.addAction(openFileAction)
-        file_menu.addAction(saveFileAction)
-        file_menu.addAction(saveAsFileAction)
-
-        # TODO Set Up Help Menu
-        help_menu = menu.addMenu("Help")
+        file_menu.addAction(self.saveFileAction)
+        file_menu.addAction(self.saveAsFileAction)
 
     def isFileOpen(self) -> bool:
         return self.fileCurrentlyOpen
@@ -128,34 +139,46 @@ class JSONWizard(QMainWindow):
         self.openNewFile()
 
     def openNewFile(self):
-        with open(self.openFile, "r+") as file:
-            if os.stat(self.openFile).st_size != 0:
-                document = json.load(file)
-            else:
-                document = {}
-                json.dump(document, file)
-            self.model.load(document)
+        if self.openFile != '':
+            with open(self.openFile, "r+") as file:
+                if os.stat(self.openFile).st_size != 0:
+                    firstChar = file.read(1)
+                    self.fileRootIsObject = firstChar == '{'
+                    file.seek(0)
+                    document = json.load(file)
+                else:
+                    if self.fileRootIsObject:
+                        document = {}
+                    else:
+                        document = []
+                    json.dump(document, file)
+                self.model.load(document)
 
-        self.fileCurrentlyOpen = True
-        self.addValueAction.setDisabled(False)
-        self.addObjectAction.setDisabled(False)
-        self.addArrayAction.setDisabled(False)
-        self.removeAction.setDisabled(False)
-        self.clearSelectionHotkey.setEnabled(True)
+            self.fileCurrentlyOpen = True
+            for action in self.toolBar.actions():
+                action.setDisabled(False)
+            self.clearSelectionHotkey.setEnabled(True)
+            self.saveFileAction.setDisabled(False)
+            self.saveAsFileAction.setDisabled(False)
+            self.setWindowFilePath(self.openFile)
+            rootText = "Root Type: Object" if self.fileRootIsObject else "Root Type: Array"
+            # TODO DO SOMETHING WITH THIS TEXT
         
     def saveCurrentFile(self):
-        saveStateDict = self.model.json()
-        with open(self.openFile, "w") as file:
-            json.dump(saveStateDict, file, indent=4)
+        if self.fileCurrentlyOpen:
+            saveStateDict = self.model.json()
+            with open(self.openFile, "w") as file:
+                json.dump(saveStateDict, file, indent=4)
 
     def saveAsCurrentFile(self):
-        saveStateDict = self.model.json()
-        fileTuple = QFileDialog.getSaveFileName(self, "Save JSON File", "./", "JSON Files (*.json)")
-        fileNameAndPath = fileTuple[0]
-        fileNameAndPath.replace('\\','/')
-        self.openFile = fileNameAndPath
-        with open(self.openFile, "w") as file:
-            json.dump(saveStateDict, file, indent=4)
+        if self.fileCurrentlyOpen:
+            saveStateDict = self.model.json()
+            fileTuple = QFileDialog.getSaveFileName(self, "Save JSON File", "./", "JSON Files (*.json)")
+            fileNameAndPath = fileTuple[0]
+            fileNameAndPath.replace('\\','/')
+            self.openFile = fileNameAndPath
+            with open(self.openFile, "w") as file:
+                json.dump(saveStateDict, file, indent=4)
     
     def addItem(self):
         # Get the currently selected object
@@ -233,7 +256,7 @@ class FileCreationWindow(QWidget):
         layout = QFormLayout()
         layout.setMargin(80)
         layout.setVerticalSpacing(50)
-    
+        layout.setAlignment(Qt.AlignCenter)
 
         # Create and Configure File Name Field
         hbox = QHBoxLayout()
@@ -266,6 +289,13 @@ class FileCreationWindow(QWidget):
         # Add to the Layout
         layout.addRow("Select new file path: ", hbox2)
 
+        # Toggle Button for Root of File (Object vs Array)
+        checkBoxHbox = QHBoxLayout()
+        checkBoxHbox.setAlignment(Qt.AlignCenter)
+        self.rootSelectorToggle = QCheckBox("Make Root Object an Array?", self)
+        checkBoxHbox.addWidget(self.rootSelectorToggle)
+        layout.addRow(checkBoxHbox)
+        
         # Create and Configure Confirm and Cancel Buttons
         hbox3 = QHBoxLayout()
         hbox3.setAlignment(Qt.AlignCenter)
@@ -338,6 +368,7 @@ class FileCreationWindow(QWidget):
         else:
             fileNameAndPath.replace('\\','/')
             mainPage.openFile = fileNameAndPath
+            mainPage.fileRootIsObject = not self.rootSelectorToggle.isChecked()
             mainPage.openNewFile()
             self.close()
             
@@ -355,6 +386,7 @@ class FileCreationWindow(QWidget):
         self.errorLabel.hide()
         self.fileNameField.clear()
         self.filePathField.clear()
+        self.rootSelectorToggle.setChecked(False)
     
 # Start App Loop, Code Below this will not execute until application is exited
 app.exec_()

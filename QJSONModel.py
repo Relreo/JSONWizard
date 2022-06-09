@@ -143,6 +143,8 @@ class QJsonModel(QtCore.QAbstractItemModel):
             if currentItem:
                 if currentItem.type is list or currentItem.type is dict:
                     parentItem = currentItem
+                else:
+                    parentItem = self._rootItem                
         else:
             currentItem = self.data(currentIndex, QtCore.Qt.EditRole)
             parentItem = self.data(parent, QtCore.Qt.EditRole)
@@ -154,6 +156,7 @@ class QJsonModel(QtCore.QAbstractItemModel):
 
         newItem = QJsonTreeItem(parentItem)
         newItem.type = itemType
+
         if parentItem.type is list:
             newItem.key = parentItem.childCount()
         elif parentItem.type is dict:

@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/* Tweaked and Customized by Ian Maynard */
+
 /*-----QWidget-----*/
 QWidget
 {
@@ -28,7 +30,6 @@ QWidget
 	color: #ffffff;
 	border-color: #051a39;
 }
-
 QTreeView
 {
 	background-color: #ff2d2d30;
@@ -524,48 +525,6 @@ QGroupBox::title::disabled
 
 }
 
-
-/*-----QCheckBox-----*/
-QCheckBox::indicator
-{
-    color: #b1b1b1;
-    background-color: #323232;
-    border: 1px solid #b1b1b1;
-    width: 12px;
-    height: 12px;
-
-}
-
-
-QCheckBox::indicator:checked
-{
-    image:url(://checkbox.png);
-    border: 1px solid #607cff;
-
-}
-
-
-QCheckBox::indicator:unchecked:hover
-{
-    border: 1px solid #607cff;
-
-}
-
-
-QCheckBox::disabled
-{
-	color: #656565;
-
-}
-
-
-QCheckBox::indicator:disabled
-{
-	background-color: #656565;
-	color: #656565;
-    border: 1px solid #656565;
-
-}
 
 
 /*-----QRadioButton-----*/
