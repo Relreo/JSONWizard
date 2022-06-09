@@ -1,5 +1,6 @@
 {
     "version": "0.2.0",
+    "python.languageServer": "Pylance",
     "configurations": [
         {
             "name": "Python: Current File",

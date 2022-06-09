@@ -1,4 +1,5 @@
 # Import Statements
+from ast import match_case
 from PySide2.QtGui import QIcon, QCloseEvent, QKeySequence
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream, QModelIndex
 from PySide2.QtWidgets import QTreeView, QCheckBox, QShortcut, QMessageBox, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
@@ -55,8 +56,6 @@ class JSONWizard(QMainWindow):
         self.setUpToolBar()
         self.addToolBar(self.toolBar)
 
-    def testFunc(self):
-        print("EXPAND DETECTED")
     def activateUnsavedChanges(self):
         if not self.isWindowModified():
             self.setWindowModified(True)
@@ -255,6 +254,27 @@ class JSONWizard(QMainWindow):
             self.setWindowModified(True)
         self.treeView.clearSelection()
 
+    def closeEvent(self, event: QCloseEvent) -> None:
+        if self.isWindowModified():
+            mBox = QMessageBox(self)
+            mBox.setWindowTitle("Warning")
+            mBox.setText("\nThe currently open JSON File has unsaved changes!\n")
+            mBox.setInformativeText("Would you like to save your changes?")
+            mBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            mBox.setDefaultButton(QMessageBox.Save)
+            answer = mBox.exec_()
+            
+            if answer == QMessageBox.Save:
+                self.saveCurrentFile()
+                event.accept()
+            elif answer == QMessageBox.Cancel:
+                event.ignore()
+                mBox.close()
+            else:
+                event.accept()
+        else:
+            event.accept()
+
 mainPage = JSONWizard()
 mainPage.show()
 
@@ -267,14 +287,14 @@ class FileCreationWindow(QWidget):
         buttonHeight = 30
         # Set Window Settings for Pop Up Menu
         self.setWindowTitle("Create New JSON File")
-        self.setMinimumSize(490, 320)
+        self.setFixedSize(490, 360)
         self.setWindowModality(Qt.ApplicationModal)
         appIcon = QIcon("./icons/appIcon.png")
         self.setWindowIcon(appIcon)
 
         # Create UI Elements and add them to the Form Layout
         layout = QFormLayout()
-        layout.setMargin(80)
+        layout.setMargin(30)
         layout.setVerticalSpacing(50)
         layout.setAlignment(Qt.AlignCenter)
 

@@ -63,6 +63,11 @@ QTreeView::branch:closed:has-children:has-siblings
     image: url(icons/branch-closed.png);
 }
 
+QMessageBox
+{
+	font: 16px;
+}
+
 /*-----QLabel-----*/
 QLabel
 {
