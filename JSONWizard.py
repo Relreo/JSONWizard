@@ -1,14 +1,11 @@
 # Import Statements
-from msilib.schema import File
-from tkinter import RIGHT
 from PySide2.QtGui import QIcon, QCloseEvent, QKeySequence
 from PySide2.QtCore import QSize, Qt, QFile, QTextStream, QModelIndex
-from PySide2.QtWidgets import QCheckBox, QShortcut, QMessageBox, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
+from PySide2.QtWidgets import QTreeView, QCheckBox, QShortcut, QMessageBox, QPushButton, QLabel, QHBoxLayout, QApplication, QAction, QWidget, QMainWindow, QToolBar, QFileDialog, QFormLayout, QLineEdit
 from pathvalidate import ValidationError, validate_filename
 import QJSONModel
 import json
 import os
-from JSONView import JSONView
 
 # QApplication Instance
 app = QApplication([])
@@ -20,19 +17,15 @@ styleSheetFile.open(QFile.ReadOnly | QFile.Text)
 styleSheet = QTextStream(styleSheetFile)
 app.setStyleSheet(styleSheet.readAll())
 
-# TODO
-# FIGURE OUT HOW TO USE self.setWindowModified(bool) to keep track of unsaved changes to model. Having trouble with data changed emit stuff
-
-
 class JSONWizard(QMainWindow):
     fileCurrentlyOpen = False
     def __init__(self):
         super().__init__()
         
-        # Visual Editor (JSONTreeView)
-        self.treeView = JSONView(self)
+        # Model and View Setup
+        self.treeView = QTreeView(self)
         self.model = QJSONModel.QJsonModel()
-
+        self.model.dataChanged.connect(self.activateUnsavedChanges)
         self.treeView.setModel(self.model)
         self.treeView.setColumnWidth(0, 350)
         # Clear Selection Hotkey
@@ -41,9 +34,8 @@ class JSONWizard(QMainWindow):
         self.clearSelectionHotkey.setEnabled(False)
         # Add Tree View to the Window
         self.setCentralWidget(self.treeView)
-        # Currently Open File
+        # Stores file name and path as a string
         self.openFile = "NO FILE OPEN"
-        
         self.fileRootIsObject = True
         # Set up popup create file window
         self.createFileWindow = None
@@ -60,11 +52,14 @@ class JSONWizard(QMainWindow):
         self.toolBar.setIconSize(QSize(48,48))
         self.toolBar.setMovable(False)
         self.toolBar.setMinimumHeight(25)
-        
         self.setUpToolBar()
-        
         self.addToolBar(self.toolBar)
 
+    def testFunc(self):
+        print("EXPAND DETECTED")
+    def activateUnsavedChanges(self):
+        if not self.isWindowModified():
+            self.setWindowModified(True)
     
     def setUpToolBar(self):
         addValueAction = QAction(QIcon("./icons/add.png"), "Add New Value", self)
@@ -161,14 +156,13 @@ class JSONWizard(QMainWindow):
             self.saveFileAction.setDisabled(False)
             self.saveAsFileAction.setDisabled(False)
             self.setWindowFilePath(self.openFile)
-            rootText = "Root Type: Object" if self.fileRootIsObject else "Root Type: Array"
-            # TODO DO SOMETHING WITH THIS TEXT
         
     def saveCurrentFile(self):
         if self.fileCurrentlyOpen:
             saveStateDict = self.model.json()
             with open(self.openFile, "w") as file:
                 json.dump(saveStateDict, file, indent=4)
+            self.setWindowModified(False)
 
     def saveAsCurrentFile(self):
         if self.fileCurrentlyOpen:
@@ -179,47 +173,70 @@ class JSONWizard(QMainWindow):
             self.openFile = fileNameAndPath
             with open(self.openFile, "w") as file:
                 json.dump(saveStateDict, file, indent=4)
+            self.setWindowModified(False)
     
     def addItem(self):
         # Get the currently selected object
         if len(self.treeView.selectedIndexes()) > 0:
             currentIndex = self.treeView.selectedIndexes()[0]
-            parentIndex = currentIndex.parent()
+            typ = currentIndex.internalPointer().type
+            if typ is dict or typ is list:
+                self.model.insertRow(currentIndex, str, currentIndex)
+            else:
+                self.model.insertRow(currentIndex, str, currentIndex.parent())
         # If none selected, use root
         else:
             currentIndex = None
             parentIndex = QModelIndex()
-        self.model.insertRow(currentIndex, str, parentIndex)
+            self.model.insertRow(currentIndex, str, parentIndex)
+        
+        
         if currentIndex:
             self.treeView.expand(currentIndex)
+        if not self.isWindowModified():
+            self.setWindowModified(True)
         self.treeView.clearSelection()
 
     def addArray(self):
         # Get the currently selected object
         if len(self.treeView.selectedIndexes()) > 0:
             currentIndex = self.treeView.selectedIndexes()[0]
-            parentIndex = currentIndex.parent()
+            typ = currentIndex.internalPointer().type
+            if typ is dict or typ is list:
+                self.model.insertRow(currentIndex, list, currentIndex)
+            else:
+                self.model.insertRow(currentIndex, list, currentIndex.parent())
         # If none selected, use root
         else:
             currentIndex = None
             parentIndex = QModelIndex()
-        self.model.insertRow(currentIndex, list, parentIndex)
+            self.model.insertRow(currentIndex, list, parentIndex)
+
         if currentIndex:
             self.treeView.expand(currentIndex)
+        if not self.isWindowModified():
+            self.setWindowModified(True)
         self.treeView.clearSelection()
 
     def addObject(self):
-        # Get the currently selected object
+                # Get the currently selected object
         if len(self.treeView.selectedIndexes()) > 0:
             currentIndex = self.treeView.selectedIndexes()[0]
-            parentIndex = currentIndex.parent()
+            typ = currentIndex.internalPointer().type
+            if typ is dict or typ is list:
+                self.model.insertRow(currentIndex, dict, currentIndex)
+            else:
+                self.model.insertRow(currentIndex, dict, currentIndex.parent())
         # If none selected, use root
         else:
             currentIndex = None
             parentIndex = QModelIndex()
-        self.model.insertRow(currentIndex, dict, parentIndex)
+            self.model.insertRow(currentIndex, dict, parentIndex)
+
         if currentIndex:
             self.treeView.expand(currentIndex)
+        if not self.isWindowModified():
+            self.setWindowModified(True)
         self.treeView.clearSelection()
 
     def removeSelectedItem(self):
@@ -234,6 +251,9 @@ class JSONWizard(QMainWindow):
                 return
         
         self.model.removeRow(currentIndex.row(), currentIndex.parent())
+        if not self.isWindowModified():
+            self.setWindowModified(True)
+        self.treeView.clearSelection()
 
 mainPage = JSONWizard()
 mainPage.show()

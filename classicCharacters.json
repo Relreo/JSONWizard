@@ -1,0 +1,26 @@
+[
+    {
+        "class": "Paladin",
+        "name": "Alf\u00f6\u00f0r",
+        "level": 70,
+        "isAlliance": true
+    },
+    {
+        "class": "Mage",
+        "name": "S\u00e1ga",
+        "level": 70,
+        "isAlliance": true
+    },
+    {
+        "class": "Priest",
+        "name": "Relreo",
+        "level": 70,
+        "isAlliance": true
+    },
+    {
+        "class": "Warlock",
+        "name": "Felsmoker",
+        "level": 64,
+        "isAlliance": true
+    }
+]

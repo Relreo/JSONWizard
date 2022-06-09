@@ -32,6 +32,7 @@ QWidget
 }
 QTreeView
 {
+	outline: 0;
 	background-color: #ff2d2d30;
 }
 QTreeView::item
@@ -46,7 +47,7 @@ QTreeView::item::hover
 }
 QTreeView::item::selected
 {
-	border: 1px solid blue;
+	border: 1px solid #81f542;
 }
 
 QTreeView::branch:open:has-children:!has-siblings,

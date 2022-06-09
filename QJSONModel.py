@@ -1,6 +1,7 @@
-"""Python adaptation of https://github.com/dridk/QJsonModel
+"""
+Python adaptation of https://github.com/dridk/QJsonModel
 
-Tweaked for JSONWizard project by Ian Maynard
+Tweaked for JSON Wizard project by Ian Maynard
 
 Supports Python 2 and 3 with PySide, PySide2, PyQt4 or PyQt5.
 Requires https://github.com/mottosso/Qt.py
@@ -23,7 +24,6 @@ Changes:
               >>> with open("file.json") as f:
               ...    document = json.load(f)
               ...    model.load(document)
-
 """
 from PySide2 import QtCore
 
@@ -93,14 +93,12 @@ class QJsonTreeItem(object):
             )
 
             for key, value in items:
-                # rootItem.value = "**JSON Object**"
                 child = self.load(value, rootItem)
                 child.key = key
                 child.type = type(value)
                 rootItem.appendChild(child)
 
         elif isinstance(value, list):
-            # rootItem.value = "**JSON Array**"
             for index, value in enumerate(value):
                 child = self.load(value, rootItem)
                 child.key = index
@@ -124,6 +122,7 @@ class QJsonModel(QtCore.QAbstractItemModel):
         self.load({})
 
     def insertRow(self, currentIndex: QtCore.QModelIndex, itemType: str | list | dict, parent: QtCore.QModelIndex) -> bool:
+        
         return self.insertRows(currentIndex, 1, itemType, parent)
 
     def insertRows(self, currentIndex: QtCore.QModelIndex, count: int, itemType: str | list | dict, parent: QtCore.QModelIndex) -> bool:
@@ -133,6 +132,8 @@ class QJsonModel(QtCore.QAbstractItemModel):
 
         if count <= 0 or row < 0:
             return False
+
+        self.beginInsertRows(parent, row, row + count - 1)
 
         parentItem = self.data(parent, QtCore.Qt.EditRole)
         
@@ -151,8 +152,6 @@ class QJsonModel(QtCore.QAbstractItemModel):
             if currentItem:
                 if currentItem.type is list or currentItem.type is dict:
                     parentItem = currentItem
-            
-        
 
         newItem = QJsonTreeItem(parentItem)
         newItem.type = itemType
@@ -169,8 +168,8 @@ class QJsonModel(QtCore.QAbstractItemModel):
         if itemType is str:
             newItem.value = "**VALUE**"
 
-        self.beginInsertRows(parent, row, row + count - 1)
         parentItem.appendChild(newItem)
+
         self.endInsertRows()
 
         return True
@@ -277,7 +276,7 @@ class QJsonModel(QtCore.QAbstractItemModel):
             else:
                 if item.parent().type != list:
                     item.key = valueString
-
+            
             self.dataChanged.emit(index, index, [QtCore.Qt.EditRole])
 
             return True
